@@ -8,7 +8,7 @@ import PerformanceChart from "@/components/performance-chart";
 import LeaderboardItem from "@/components/leaderboard-item";
 
 // Mock current user - in a real app this would come from auth context
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = "665f1b2c3d4e5f6789012345";
 
 export default function Dashboard() {
   const { data: userStats, isLoading: statsLoading } = useQuery({

@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import type { Activity } from "@shared/schema";
 
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = "665f1b2c3d4e5f6789012345";
 
 // Simple game implementations
 const WordScrambleGame = ({ activity, onComplete }: { activity: Activity; onComplete: (score: number, timeSpent: number) => void }) => {

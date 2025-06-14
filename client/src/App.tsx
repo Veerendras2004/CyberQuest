@@ -14,7 +14,7 @@ import CommunityPage from "@/pages/community";
 import LeaderboardPage from "@/pages/leaderboard";
 import NotFound from "@/pages/not-found";
 
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = "665f1b2c3d4e5f6789012345";
 
 function AppContent() {
   const { data: user } = useQuery({

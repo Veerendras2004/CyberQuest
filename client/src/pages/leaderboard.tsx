@@ -5,8 +5,9 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LeaderboardItem from "@/components/leaderboard-item";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = "665f1b2c3d4e5f6789012345";
 
 export default function LeaderboardPage() {
   const [timeFrame, setTimeFrame] = useState<"week" | "alltime">("week");
@@ -32,151 +33,72 @@ export default function LeaderboardPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center space-x-4 mb-6">
-            <Link href="/">
-              <Button variant="outline" size="icon">
-                <ArrowLeft size={16} />
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900">Leaderboard</h1>
-              <p className="text-gray-600">See how you rank against other players</p>
-            </div>
+        <div className="flex items-center space-x-4 mb-8">
+          <Link href="/">
+            <Button variant="outline" size="icon">
+              <ArrowLeft size={16} />
+            </Button>
+          </Link>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Leaderboard 🏆</h1>
+            <p className="text-gray-600">See how you rank among the top players!</p>
           </div>
         </div>
 
-        {/* Top 3 Podium */}
-        {topThree.length > 0 && (
-          <div className="mb-12">
-            <Card className="gradient-bg text-white overflow-hidden">
-              <CardHeader>
-                <CardTitle className="text-center text-2xl font-bold flex items-center justify-center space-x-2">
-                  <Trophy size={28} />
-                  <span>Top Performers</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-end justify-center space-x-8 py-8">
-                  {/* Second Place */}
-                  {topThree[1] && (
-                    <div className="text-center">
-                      <div className="w-16 h-16 btn-gradient-secondary rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-white font-bold text-lg">
-                          {topThree[1].firstName[0]}{topThree[1].lastName[0]}
-                        </span>
-                      </div>
-                      <div className="bg-white/20 backdrop-blur rounded-lg p-4 h-24 flex flex-col justify-center">
-                        <Medal size={20} className="mx-auto mb-1 text-gray-300" />
-                        <div className="font-bold">{topThree[1].firstName}</div>
-                        <div className="text-sm opacity-80">{topThree[1].totalScore.toLocaleString()} pts</div>
-                      </div>
-                    </div>
-                  )}
+        <div className="mb-6 flex items-center justify-end">
+          <Select onValueChange={(value: "week" | "alltime") => setTimeFrame(value)} defaultValue="week">
+            <SelectTrigger className="w-[180px]">
+              <Trophy size={16} className="mr-2" />
+              <SelectValue placeholder="Time Frame" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">This Week</SelectItem>
+              <SelectItem value="alltime">All Time</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-                  {/* First Place */}
-                  {topThree[0] && (
-                    <div className="text-center">
-                      <div className="w-20 h-20 btn-gradient-warning rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-white font-bold text-xl">
-                          {topThree[0].firstName[0]}{topThree[0].lastName[0]}
-                        </span>
+        {leaderboard && leaderboard.length > 0 ? (
+          <div className="space-y-6">
+            {/* Top 3 */}
+            {topThree.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                {topThree.map((user: any, index: number) => (
+                  <Card key={user.id} className="text-center py-8 relative overflow-hidden">
+                    <CardContent className="p-0">
+                      {index === 0 && (
+                        <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-b from-yellow-400/50 to-transparent"></div>
+                      )}
+                      <div className="relative z-10">
+                        <Medal size={48} className={`mx-auto mb-4 ${index === 0 ? "text-yellow-500" : index === 1 ? "text-gray-400" : "text-amber-700"}`} />
+                        <p className="text-lg font-bold text-gray-900">#{index + 1}</p>
+                        <h3 className="text-xl font-bold text-primary mb-2">{user.username}</h3>
+                        <p className="text-lg font-semibold text-gray-700">{user.points} Points</p>
                       </div>
-                      <div className="bg-white/20 backdrop-blur rounded-lg p-4 h-32 flex flex-col justify-center">
-                        <Trophy size={24} className="mx-auto mb-2 text-yellow-300" />
-                        <div className="font-bold text-lg">{topThree[0].firstName}</div>
-                        <div className="text-sm opacity-80">{topThree[0].totalScore.toLocaleString()} pts</div>
-                      </div>
-                    </div>
-                  )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            )}
 
-                  {/* Third Place */}
-                  {topThree[2] && (
-                    <div className="text-center">
-                      <div className="w-16 h-16 btn-gradient-primary rounded-full flex items-center justify-center mx-auto mb-3">
-                        <span className="text-white font-bold text-lg">
-                          {topThree[2].firstName[0]}{topThree[2].lastName[0]}
-                        </span>
-                      </div>
-                      <div className="bg-white/20 backdrop-blur rounded-lg p-4 h-24 flex flex-col justify-center">
-                        <Award size={20} className="mx-auto mb-1 text-orange-300" />
-                        <div className="font-bold">{topThree[2].firstName}</div>
-                        <div className="text-sm opacity-80">{topThree[2].totalScore.toLocaleString()} pts</div>
-                      </div>
-                    </div>
-                  )}
+            {/* Rest of Leaderboard */}
+            <Card>
+              <CardContent className="p-0">
+                <div className="divide-y divide-gray-200">
+                  {restOfLeaderboard.map((user: any, index: number) => (
+                    <LeaderboardItem key={user.id} user={user} rank={index + 4} />
+                  ))}
                 </div>
               </CardContent>
             </Card>
           </div>
+        ) : (
+          <div className="text-center py-12">
+            <Award size={48} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No leaderboard data yet</h3>
+            <p className="text-gray-600">Start completing quizzes and activities to earn points!</p>
+          </div>
         )}
-
-        {/* Full Leaderboard */}
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle>Full Rankings</CardTitle>
-              <div className="flex items-center space-x-2">
-                <Button
-                  variant={timeFrame === "week" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setTimeFrame("week")}
-                  className={timeFrame === "week" ? "btn-gradient-primary" : ""}
-                >
-                  This Week
-                </Button>
-                <Button
-                  variant={timeFrame === "alltime" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setTimeFrame("alltime")}
-                  className={timeFrame === "alltime" ? "btn-gradient-primary" : ""}
-                >
-                  All Time
-                </Button>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {/* Show top 3 again in list format */}
-              {topThree.map((user) => (
-                <LeaderboardItem
-                  key={user.id}
-                  user={user}
-                  isCurrentUser={user.id === CURRENT_USER_ID}
-                />
-              ))}
-              
-              {/* Rest of the leaderboard */}
-              {restOfLeaderboard.map((user) => (
-                <LeaderboardItem
-                  key={user.id}
-                  user={user}
-                  isCurrentUser={user.id === CURRENT_USER_ID}
-                />
-              ))}
-            </div>
-
-            {/* Load More Button */}
-            {leaderboard && leaderboard.length >= 50 && (
-              <div className="mt-6 text-center">
-                <Button variant="outline">
-                  View More Players
-                </Button>
-              </div>
-            )}
-
-            {/* Empty State */}
-            {leaderboard && leaderboard.length === 0 && (
-              <div className="text-center py-12">
-                <Trophy size={48} className="mx-auto text-gray-400 mb-4" />
-                <h3 className="text-lg font-medium text-gray-900 mb-2">No rankings yet</h3>
-                <p className="text-gray-600">Be the first to complete a quiz or activity!</p>
-              </div>
-            )}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );

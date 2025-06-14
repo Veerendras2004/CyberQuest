@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 
-const CURRENT_USER_ID = 1;
+const CURRENT_USER_ID = "665f1b2c3d4e5f6789012345";
 
 interface CyberLabResult {
   id: number;

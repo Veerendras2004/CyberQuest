@@ -9,11 +9,12 @@ import {
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  const server = createServer(app);
   
   // User routes
   app.get("/api/user/:id", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const user = await storage.getUser(userId);
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -26,8 +27,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/user/:id/stats", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const stats = await storage.getUserStats(userId);
+      if (!stats) {
+        return res.status(404).json({ message: "User stats not found" });
+      }
       res.json(stats);
     } catch (error) {
       res.status(500).json({ message: "Failed to get user stats" });
@@ -46,7 +50,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/quiz/:id", async (req, res) => {
     try {
-      const quizId = parseInt(req.params.id);
+      const quizId = req.params.id;
       const quiz = await storage.getQuizById(quizId);
       if (!quiz) {
         return res.status(404).json({ message: "Quiz not found" });
@@ -59,7 +63,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/quiz/:id/questions", async (req, res) => {
     try {
-      const quizId = parseInt(req.params.id);
+      const quizId = req.params.id;
       const questions = await storage.getQuestionsByQuizId(quizId);
       res.json(questions);
     } catch (error) {
@@ -69,13 +73,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/quiz/result", async (req, res) => {
     try {
-      const validatedData = insertUserQuizResultSchema.parse(req.body);
-      const result = await storage.saveQuizResult(validatedData);
+      const result = await storage.saveQuizResult(req.body);
       res.json(result);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid quiz result data", errors: error.errors });
-      }
       res.status(500).json({ message: "Failed to save quiz result" });
     }
   });
@@ -92,7 +92,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/activity/:id", async (req, res) => {
     try {
-      const activityId = parseInt(req.params.id);
+      const activityId = req.params.id;
       const activity = await storage.getActivityById(activityId);
       if (!activity) {
         return res.status(404).json({ message: "Activity not found" });
@@ -105,13 +105,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/activity/result", async (req, res) => {
     try {
-      const validatedData = insertUserActivityResultSchema.parse(req.body);
-      const result = await storage.saveActivityResult(validatedData);
+      const result = await storage.saveActivityResult(req.body);
       res.json(result);
     } catch (error) {
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Invalid activity result data", errors: error.errors });
-      }
       res.status(500).json({ message: "Failed to save activity result" });
     }
   });
@@ -129,7 +125,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/user/:id/rank", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const rank = await storage.getUserRank(userId);
       res.json({ rank });
     } catch (error) {
@@ -140,7 +136,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Achievements routes
   app.get("/api/user/:id/achievements", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const achievements = await storage.getUserAchievements(userId);
       res.json(achievements);
     } catch (error) {
@@ -151,7 +147,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Results routes
   app.get("/api/user/:id/quiz-results", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const results = await storage.getUserQuizResults(userId);
       res.json(results);
     } catch (error) {
@@ -161,7 +157,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/user/:id/activity-results", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const results = await storage.getUserActivityResults(userId);
       res.json(results);
     } catch (error) {
@@ -398,17 +394,122 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       });
 
+      // Create sample team challenges for Red Team
+      const redChallenges = [
+        {
+          title: "SQL Injection Detection",
+          description: "Identify and exploit SQL injection vulnerabilities in web applications",
+          team: "red",
+          category: "penetration_testing",
+          difficulty: "intermediate",
+          type: "simulation",
+          content: { steps: ["Analyze target", "Craft payload", "Execute injection"], difficulty: "medium" },
+          maxScore: 100,
+          unlockLevel: 1
+        },
+        {
+          title: "Network Reconnaissance",
+          description: "Perform network scanning and enumeration techniques",
+          team: "red",
+          category: "reconnaissance",
+          difficulty: "beginner",
+          type: "lab",
+          content: { tools: ["nmap", "netcat"], targets: ["192.168.1.0/24"] },
+          maxScore: 75,
+          unlockLevel: 1
+        },
+        {
+          title: "Social Engineering Campaign",
+          description: "Design and execute a phishing campaign simulation",
+          team: "red",
+          category: "social_engineering",
+          difficulty: "advanced",
+          type: "simulation",
+          content: { phases: ["research", "preparation", "execution", "analysis"] },
+          maxScore: 150,
+          unlockLevel: 2
+        }
+      ];
+
+      // Create sample team challenges for White Team
+      const whiteChallenges = [
+        {
+          title: "Incident Response Simulation",
+          description: "Respond to a simulated security breach following NIST framework",
+          team: "white",
+          category: "incident_response",
+          difficulty: "intermediate",
+          type: "simulation",
+          content: { scenario: "data_breach", steps: ["detect", "contain", "eradicate", "recover"] },
+          maxScore: 120,
+          unlockLevel: 1
+        },
+        {
+          title: "Firewall Configuration",
+          description: "Configure and harden network firewall rules",
+          team: "white",
+          category: "network_security",
+          difficulty: "beginner",
+          type: "lab",
+          content: { rules: ["block_malicious", "allow_business"], tools: ["iptables"] },
+          maxScore: 80,
+          unlockLevel: 1
+        },
+        {
+          title: "Log Analysis & SIEM",
+          description: "Analyze security logs to identify threat patterns",
+          team: "white",
+          category: "threat_analysis",
+          difficulty: "advanced",
+          type: "simulation",
+          content: { logs: ["apache", "windows_event", "firewall"], tools: ["splunk"] },
+          maxScore: 140,
+          unlockLevel: 2
+        }
+      ];
+
+      // Insert team challenges
+      for (const challenge of [...redChallenges, ...whiteChallenges]) {
+        await storage.createTeamChallenge(challenge);
+      }
+
+      // Create sample community posts
+      const samplePosts = [
+        {
+          userId: user.id,
+          username: user.username,
+          content: "Just completed my first penetration testing challenge! The SQL injection lab was really educational. Anyone have tips for more advanced techniques?",
+          tags: ["Red Team", "Penetration Testing", "SQL Injection"]
+        },
+        {
+          userId: user.id,
+          username: user.username,
+          content: "Great article on the latest ransomware trends: https://example.com/ransomware-report-2024. Key takeaway: backup strategies are more critical than ever.",
+          tags: ["White Team", "Incident Response", "Ransomware"]
+        },
+        {
+          userId: user.id,
+          username: user.username,
+          content: "The new NIST Cybersecurity Framework 2.0 has some interesting updates on supply chain security. How is everyone adapting their processes?",
+          tags: ["White Team", "Compliance", "NIST"]
+        }
+      ];
+
+      for (const post of samplePosts) {
+        await storage.createCommunityPost(post);
+      }
+
       res.json({ message: "Cybersecurity learning data created successfully", userId: user.id });
     } catch (error) {
       console.error("Seed error:", error);
-      res.status(500).json({ message: "Failed to seed data", error: error.message });
+      res.status(500).json({ message: "Failed to seed data"});
     }
   });
 
   // Team management routes
   app.get("/api/user/:id/team", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const team = await storage.getUserTeam(userId);
       res.json(team);
     } catch (error) {
@@ -418,7 +519,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/user/:id/team", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const { team } = req.body;
       await storage.updateUserTeam(userId, team);
       res.json({ success: true });
@@ -454,7 +555,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cyber lab routes
   app.get("/api/user/:id/cyber-lab-results", async (req, res) => {
     try {
-      const userId = parseInt(req.params.id);
+      const userId = req.params.id;
       const results = await storage.getUserCyberLabResults(userId);
       res.json(results);
     } catch (error) {
@@ -501,7 +602,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/community-posts/:id/comments", async (req, res) => {
     try {
-      const postId = parseInt(req.params.id);
+      const postId = req.params.id;
       const comments = await storage.getPostComments(postId);
       res.json(comments);
     } catch (error) {
@@ -524,7 +625,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/community-posts/:id/like", async (req, res) => {
     try {
-      const postId = parseInt(req.params.id);
+      const postId = req.params.id;
       await storage.likePost(postId);
       res.json({ success: true });
     } catch (error) {
@@ -532,6 +633,5 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  const httpServer = createServer(app);
-  return httpServer;
+  return server;
 }
