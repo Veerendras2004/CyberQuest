@@ -66,9 +66,9 @@ export default function Dashboard() {
           <div className="gradient-bg rounded-2xl p-8 text-white relative overflow-hidden">
             <div className="relative z-10">
               <h1 className="text-3xl font-bold mb-2">
-                Welcome back, {user?.firstName || "Alex"}! 🎮
+                Welcome back, {user?.firstName || "Alex"}! 🛡️
               </h1>
-              <p className="text-lg opacity-90 mb-6">Ready to level up your learning today?</p>
+              <p className="text-lg opacity-90 mb-6">Ready to strengthen your cybersecurity skills today?</p>
               <div className="flex flex-wrap gap-4">
                 <div className="bg-white/20 backdrop-blur rounded-lg p-4 min-w-[120px]">
                   <div className="text-2xl font-bold">{userStats.totalScore.toLocaleString()}</div>

@@ -331,8 +331,8 @@ export default function ActivitiesPage() {
                 </Button>
               </Link>
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Learning Activities</h1>
-                <p className="text-gray-600">Interactive games to boost your skills</p>
+                <h1 className="text-3xl font-bold text-gray-900">Cybersecurity Activities</h1>
+                <p className="text-gray-600">Interactive games to strengthen your security skills</p>
               </div>
             </div>
             

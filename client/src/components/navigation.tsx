@@ -31,7 +31,7 @@ export default function Navigation({ user }: NavigationProps) {
               <div className="w-8 h-8 btn-gradient-primary rounded-lg flex items-center justify-center">
                 <Gamepad2 className="text-white" size={16} />
               </div>
-              <span className="text-xl font-bold text-gray-900">GameLearn</span>
+              <span className="text-xl font-bold text-gray-900">CyberSecLearn</span>
             </div>
           </div>
           

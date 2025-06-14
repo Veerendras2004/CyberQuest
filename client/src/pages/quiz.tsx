@@ -106,8 +106,8 @@ export default function QuizPage() {
               </Button>
             </Link>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Quizzes</h1>
-              <p className="text-gray-600">Test your knowledge and earn points</p>
+              <h1 className="text-3xl font-bold text-gray-900">Cybersecurity Quizzes</h1>
+              <p className="text-gray-600">Test your cybersecurity knowledge across three difficulty levels</p>
             </div>
           </div>
         </div>

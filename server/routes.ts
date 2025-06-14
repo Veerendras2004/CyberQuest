@@ -165,98 +165,239 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Seed data for demonstration
+  // Seed cybersecurity learning data
   app.post("/api/seed", async (req, res) => {
     try {
       // Create sample user
       const user = await storage.createUser({
-        username: "alexchen",
-        password: "password123",
+        username: "cybersec_learner",
+        password: "SecurePass123!",
         firstName: "Alex",
-        lastName: "Chen",
-        email: "alex@example.com"
+        lastName: "Security",
+        email: "alex@cybersec.learn"
       });
 
-      // Create sample quiz
-      const quiz = await storage.createQuiz({
-        title: "Mathematics Quiz",
-        description: "Test your basic math skills",
-        category: "Mathematics",
+      // Create Beginner Cybersecurity Quiz
+      const beginnerQuiz = await storage.createQuiz({
+        title: "Cybersecurity Fundamentals",
+        description: "Essential cybersecurity concepts for beginners",
+        category: "Cybersecurity",
+        difficulty: "easy", 
+        timeLimit: 45
+      });
+
+      // Beginner Questions
+      const beginnerQuestions = [
+        {
+          questionText: "What does the 'S' in HTTPS stand for?",
+          options: ["Server", "Secure", "System", "Standard"],
+          correctAnswer: 1,
+          points: 10
+        },
+        {
+          questionText: "Which of the following is considered a strong password?",
+          options: ["password123", "123456", "P@ssw0rd#2024!", "qwerty"],
+          correctAnswer: 2,
+          points: 10
+        },
+        {
+          questionText: "What is phishing?",
+          options: ["A type of malware", "A method to catch fish", "A social engineering attack", "A firewall technique"],
+          correctAnswer: 2,
+          points: 10
+        },
+        {
+          questionText: "Which protocol is used for secure email transmission?",
+          options: ["HTTP", "FTP", "SMTP", "TLS/SSL"],
+          correctAnswer: 3,
+          points: 10
+        },
+        {
+          questionText: "What is the primary purpose of a firewall?",
+          options: ["Speed up internet", "Block malicious traffic", "Store passwords", "Encrypt files"],
+          correctAnswer: 1,
+          points: 10
+        }
+      ];
+
+      for (let i = 0; i < beginnerQuestions.length; i++) {
+        await storage.createQuestion({
+          quizId: beginnerQuiz.id,
+          ...beginnerQuestions[i],
+          order: i + 1
+        });
+      }
+
+      // Create Intermediate Cybersecurity Quiz
+      const intermediateQuiz = await storage.createQuiz({
+        title: "Network Security & Threats",
+        description: "Advanced network security concepts and threat analysis",
+        category: "Cybersecurity",
         difficulty: "medium",
         timeLimit: 60
       });
 
-      // Create sample questions
-      await storage.createQuestion({
-        quizId: quiz.id,
-        questionText: "What is 15 × 8?",
-        options: ["120", "130", "125", "115"],
-        correctAnswer: 0,
-        points: 10,
-        order: 1
+      // Intermediate Questions
+      const intermediateQuestions = [
+        {
+          questionText: "Which type of attack involves overwhelming a server with traffic?",
+          options: ["SQL Injection", "Cross-Site Scripting", "DDoS Attack", "Man-in-the-Middle"],
+          correctAnswer: 2,
+          points: 15
+        },
+        {
+          questionText: "What is the main difference between symmetric and asymmetric encryption?",
+          options: ["Speed of encryption", "Key usage", "Algorithm complexity", "File size"],
+          correctAnswer: 1,
+          points: 15
+        },
+        {
+          questionText: "Which of these is NOT a common vulnerability in web applications?",
+          options: ["SQL Injection", "Buffer Overflow", "CSRF", "Physical Access"],
+          correctAnswer: 3,
+          points: 15
+        },
+        {
+          questionText: "What does IDS stand for in cybersecurity?",
+          options: ["Internet Detection System", "Intrusion Detection System", "Internal Defense System", "Identity Defense Service"],
+          correctAnswer: 1,
+          points: 15
+        },
+        {
+          questionText: "Which hashing algorithm is considered most secure currently?",
+          options: ["MD5", "SHA-1", "SHA-256", "CRC32"],
+          correctAnswer: 2,
+          points: 15
+        }
+      ];
+
+      for (let i = 0; i < intermediateQuestions.length; i++) {
+        await storage.createQuestion({
+          quizId: intermediateQuiz.id,
+          ...intermediateQuestions[i],
+          order: i + 1
+        });
+      }
+
+      // Create Hard Cybersecurity Quiz
+      const hardQuiz = await storage.createQuiz({
+        title: "Advanced Cyber Defense",
+        description: "Expert-level cybersecurity challenges and advanced topics",
+        category: "Cybersecurity",
+        difficulty: "hard",
+        timeLimit: 90
       });
 
-      await storage.createQuestion({
-        quizId: quiz.id,
-        questionText: "What is 144 ÷ 12?",
-        options: ["11", "12", "13", "14"],
-        correctAnswer: 1,
-        points: 10,
-        order: 2
-      });
+      // Hard Questions
+      const hardQuestions = [
+        {
+          questionText: "In a zero-day exploit, what does 'zero-day' refer to?",
+          options: ["Time to patch", "Days since discovery", "Attack duration", "Vulnerability lifespan"],
+          correctAnswer: 0,
+          points: 20
+        },
+        {
+          questionText: "Which technique is used in advanced persistent threats (APTs)?",
+          options: ["Quick in-and-out attacks", "Long-term stealthy presence", "Brute force attacks", "Social media manipulation"],
+          correctAnswer: 1,
+          points: 20
+        },
+        {
+          questionText: "What is the primary goal of threat hunting?",
+          options: ["Patch vulnerabilities", "Proactively find threats", "Train employees", "Install security tools"],
+          correctAnswer: 1,
+          points: 20
+        },
+        {
+          questionText: "Which framework is commonly used for incident response?",
+          options: ["OWASP", "NIST", "ISO 27001", "COBIT"],
+          correctAnswer: 1,
+          points: 20
+        },
+        {
+          questionText: "What is lateral movement in cybersecurity?",
+          options: ["Moving between network segments", "Physical security movement", "Data transfer protocols", "Firewall configuration"],
+          correctAnswer: 0,
+          points: 20
+        }
+      ];
 
-      // Create sample activities
+      for (let i = 0; i < hardQuestions.length; i++) {
+        await storage.createQuestion({
+          quizId: hardQuiz.id,
+          ...hardQuestions[i],
+          order: i + 1
+        });
+      }
+
+      // Create cybersecurity-themed activities
       await storage.createActivity({
-        title: "Word Scramble",
-        description: "Unscramble letters to form words and improve your vocabulary skills.",
+        title: "Security Term Scramble",
+        description: "Unscramble cybersecurity terms and strengthen your security vocabulary.",
         type: "word_scramble",
-        category: "Language",
+        category: "Cybersecurity",
         difficulty: "easy",
         timeEstimate: "5-10 min",
         maxScore: 100,
-        imageUrl: "https://images.unsplash.com/photo-1606092195730-5d7b9af1efc5?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200",
+        imageUrl: "https://images.unsplash.com/photo-1563986768609-322da13575f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200",
         isNew: true,
         gameData: {
-          words: ["LEARNING", "EDUCATION", "KNOWLEDGE", "STUDENT", "TEACHER"]
+          words: ["FIREWALL", "ENCRYPTION", "MALWARE", "PHISHING", "AUTHENTICATION", "VULNERABILITY", "INTRUSION", "CRYPTOGRAPHY"]
         }
       });
 
       await storage.createActivity({
-        title: "Number Puzzle",
-        description: "Solve mathematical puzzles and improve your problem-solving skills.",
+        title: "Cyber Threat Sequence",
+        description: "Identify patterns in cybersecurity attack sequences and improve threat detection skills.",
         type: "number_puzzle",
-        category: "Mathematics",
+        category: "Cybersecurity",
         difficulty: "medium",
         timeEstimate: "10-15 min",
         maxScore: 150,
-        imageUrl: "https://images.unsplash.com/photo-1611996575749-79a3a250f948?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200",
+        imageUrl: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200",
         isPopular: true,
         gameData: {
           puzzles: [
-            { sequence: [2, 4, 8, 16], answer: 32 },
-            { sequence: [1, 1, 2, 3, 5], answer: 8 }
+            { sequence: [1, 2, 4, 8, 16], answer: 32, hint: "Binary progression" },
+            { sequence: [80, 443, 22, 21], answer: 25, hint: "Common port numbers" },
+            { sequence: [128, 192, 256, 384], answer: 512, hint: "Encryption key sizes" }
           ]
         }
       });
 
       await storage.createActivity({
-        title: "Memory Match",
-        description: "Test and improve your memory by matching pairs of cards.",
+        title: "Security Symbol Match",
+        description: "Match cybersecurity symbols and icons to improve pattern recognition skills.",
         type: "memory_match",
-        category: "Memory",
+        category: "Cybersecurity",
         difficulty: "easy",
         timeEstimate: "3-8 min",
         maxScore: 200,
-        imageUrl: "https://images.unsplash.com/photo-1551836022-deb4988cc6c0?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200",
+        imageUrl: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200",
         gameData: {
           gridSize: 4,
-          symbols: ["🎮", "🎯", "🏆", "⭐", "🎨", "🎪", "🎭", "🎲"]
+          symbols: ["🔒", "🛡️", "🔑", "⚠️", "🚨", "🔐", "🛠️", "🎯"]
         }
       });
 
-      res.json({ message: "Sample data created successfully", userId: user.id });
+      await storage.createActivity({
+        title: "Password Cracking Challenge",
+        description: "Learn about password security by understanding common attack patterns.",
+        type: "word_scramble",
+        category: "Cybersecurity",
+        difficulty: "hard",
+        timeEstimate: "8-12 min",
+        maxScore: 120,
+        imageUrl: "https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&auto=format&fit=crop&w=400&h=200",
+        gameData: {
+          words: ["BRUTEFORCE", "DICTIONARY", "RAINBOW", "SALTING", "HASHING", "KEYLOGGER"]
+        }
+      });
+
+      res.json({ message: "Cybersecurity learning data created successfully", userId: user.id });
     } catch (error) {
-      res.status(500).json({ message: "Failed to seed data" });
+      console.error("Seed error:", error);
+      res.status(500).json({ message: "Failed to seed data", error: error.message });
     }
   });
 
