@@ -1,7 +1,11 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertUserQuizResultSchema, insertUserActivityResultSchema } from "@shared/schema";
+import { 
+  insertUserQuizResultSchema, insertUserActivityResultSchema, insertTeamChallengeSchema,
+  insertUserTeamProgressSchema, insertCyberLabResultSchema, insertCommunityPostSchema,
+  insertPostCommentSchema
+} from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -398,6 +402,133 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Seed error:", error);
       res.status(500).json({ message: "Failed to seed data", error: error.message });
+    }
+  });
+
+  // Team management routes
+  app.get("/api/user/:id/team", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const team = await storage.getUserTeam(userId);
+      res.json(team);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get user team" });
+    }
+  });
+
+  app.post("/api/user/:id/team", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const { team } = req.body;
+      await storage.updateUserTeam(userId, team);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to update user team" });
+    }
+  });
+
+  // Team challenges routes
+  app.get("/api/team-challenges/:team", async (req, res) => {
+    try {
+      const team = req.params.team;
+      const challenges = await storage.getTeamChallenges(team);
+      res.json(challenges);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get team challenges" });
+    }
+  });
+
+  app.post("/api/team-progress", async (req, res) => {
+    try {
+      const validatedData = insertUserTeamProgressSchema.parse(req.body);
+      const progress = await storage.saveTeamProgress(validatedData);
+      res.json(progress);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid progress data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to save progress" });
+    }
+  });
+
+  // Cyber lab routes
+  app.get("/api/user/:id/cyber-lab-results", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.id);
+      const results = await storage.getUserCyberLabResults(userId);
+      res.json(results);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get cyber lab results" });
+    }
+  });
+
+  app.post("/api/cyber-lab-results", async (req, res) => {
+    try {
+      const validatedData = insertCyberLabResultSchema.parse(req.body);
+      const result = await storage.saveCyberLabResult(validatedData);
+      res.json(result);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid lab result data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to save lab result" });
+    }
+  });
+
+  // Community routes
+  app.get("/api/community-posts", async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const posts = await storage.getCommunityPosts(limit);
+      res.json(posts);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get community posts" });
+    }
+  });
+
+  app.post("/api/community-posts", async (req, res) => {
+    try {
+      const validatedData = insertCommunityPostSchema.parse(req.body);
+      const post = await storage.createCommunityPost(validatedData);
+      res.json(post);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid post data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create post" });
+    }
+  });
+
+  app.get("/api/community-posts/:id/comments", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      const comments = await storage.getPostComments(postId);
+      res.json(comments);
+    } catch (error) {
+      res.status(500).json({ message: "Failed to get comments" });
+    }
+  });
+
+  app.post("/api/post-comments", async (req, res) => {
+    try {
+      const validatedData = insertPostCommentSchema.parse(req.body);
+      const comment = await storage.createPostComment(validatedData);
+      res.json(comment);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid comment data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create comment" });
+    }
+  });
+
+  app.post("/api/community-posts/:id/like", async (req, res) => {
+    try {
+      const postId = parseInt(req.params.id);
+      await storage.likePost(postId);
+      res.json({ success: true });
+    } catch (error) {
+      res.status(500).json({ message: "Failed to like post" });
     }
   });
 
