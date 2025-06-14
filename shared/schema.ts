@@ -12,6 +12,7 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   totalScore: integer("total_score").default(0),
   streak: integer("streak").default(0),
+  teamSelection: text("team_selection"), // "red", "white", or null
   lastActivity: timestamp("last_activity"),
   createdAt: timestamp("created_at").defaultNow(),
 });
@@ -81,6 +82,62 @@ export const achievements = pgTable("achievements", {
   description: text("description"),
   iconName: text("icon_name"), // FontAwesome icon name
   earnedAt: timestamp("earned_at").defaultNow(),
+});
+
+export const teamChallenges = pgTable("team_challenges", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  description: text("description"),
+  team: text("team").notNull(), // "red" or "white"
+  category: text("category").notNull(), // e.g., "penetration_testing", "incident_response"
+  difficulty: text("difficulty").notNull(),
+  type: text("type").notNull(), // "simulation", "quiz", "lab"
+  content: json("content").$type<any>(), // challenge-specific data
+  maxScore: integer("max_score").default(100),
+  unlockLevel: integer("unlock_level").default(1),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const userTeamProgress = pgTable("user_team_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  challengeId: integer("challenge_id").references(() => teamChallenges.id),
+  score: integer("score").notNull(),
+  completed: boolean("completed").default(false),
+  timeSpent: integer("time_spent"), // seconds
+  attempts: integer("attempts").default(1),
+  completedAt: timestamp("completed_at").defaultNow(),
+});
+
+export const cyberLabResults = pgTable("cyber_lab_results", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  labType: text("lab_type").notNull(), // "phishing", "malware", "social_engineering"
+  score: integer("score").notNull(),
+  totalQuestions: integer("total_questions").notNull(),
+  correctAnswers: integer("correct_answers").notNull(),
+  timeSpent: integer("time_spent"),
+  completedAt: timestamp("completed_at").defaultNow(),
+});
+
+export const communityPosts = pgTable("community_posts", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  username: text("username").notNull(),
+  content: text("content").notNull(),
+  tags: text("tags").array(),
+  likes: integer("likes").default(0),
+  commentCount: integer("comment_count").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const postComments = pgTable("post_comments", {
+  id: serial("id").primaryKey(),
+  postId: integer("post_id").references(() => communityPosts.id),
+  userId: integer("user_id").references(() => users.id),
+  username: text("username").notNull(),
+  content: text("content").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
 });
 
 // Relations
