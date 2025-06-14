@@ -145,6 +145,51 @@ export const usersRelations = relations(users, ({ many }) => ({
   quizResults: many(userQuizResults),
   activityResults: many(userActivityResults),
   achievements: many(achievements),
+  teamProgress: many(userTeamProgress),
+  cyberLabResults: many(cyberLabResults),
+  communityPosts: many(communityPosts),
+  postComments: many(postComments),
+}));
+
+export const teamChallengesRelations = relations(teamChallenges, ({ many }) => ({
+  userProgress: many(userTeamProgress),
+}));
+
+export const userTeamProgressRelations = relations(userTeamProgress, ({ one }) => ({
+  user: one(users, {
+    fields: [userTeamProgress.userId],
+    references: [users.id],
+  }),
+  challenge: one(teamChallenges, {
+    fields: [userTeamProgress.challengeId],
+    references: [teamChallenges.id],
+  }),
+}));
+
+export const cyberLabResultsRelations = relations(cyberLabResults, ({ one }) => ({
+  user: one(users, {
+    fields: [cyberLabResults.userId],
+    references: [users.id],
+  }),
+}));
+
+export const communityPostsRelations = relations(communityPosts, ({ one, many }) => ({
+  user: one(users, {
+    fields: [communityPosts.userId],
+    references: [users.id],
+  }),
+  comments: many(postComments),
+}));
+
+export const postCommentsRelations = relations(postComments, ({ one }) => ({
+  post: one(communityPosts, {
+    fields: [postComments.postId],
+    references: [communityPosts.id],
+  }),
+  user: one(users, {
+    fields: [postComments.userId],
+    references: [users.id],
+  }),
 }));
 
 export const quizzesRelations = relations(quizzes, ({ many }) => ({
@@ -230,6 +275,33 @@ export const insertAchievementSchema = createInsertSchema(achievements).omit({
   earnedAt: true,
 });
 
+export const insertTeamChallengeSchema = createInsertSchema(teamChallenges).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUserTeamProgressSchema = createInsertSchema(userTeamProgress).omit({
+  id: true,
+  completedAt: true,
+});
+
+export const insertCyberLabResultSchema = createInsertSchema(cyberLabResults).omit({
+  id: true,
+  completedAt: true,
+});
+
+export const insertCommunityPostSchema = createInsertSchema(communityPosts).omit({
+  id: true,
+  likes: true,
+  commentCount: true,
+  createdAt: true,
+});
+
+export const insertPostCommentSchema = createInsertSchema(postComments).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
@@ -245,3 +317,13 @@ export type UserActivityResult = typeof userActivityResults.$inferSelect;
 export type InsertUserActivityResult = z.infer<typeof insertUserActivityResultSchema>;
 export type Achievement = typeof achievements.$inferSelect;
 export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type TeamChallenge = typeof teamChallenges.$inferSelect;
+export type InsertTeamChallenge = z.infer<typeof insertTeamChallengeSchema>;
+export type UserTeamProgress = typeof userTeamProgress.$inferSelect;
+export type InsertUserTeamProgress = z.infer<typeof insertUserTeamProgressSchema>;
+export type CyberLabResult = typeof cyberLabResults.$inferSelect;
+export type InsertCyberLabResult = z.infer<typeof insertCyberLabResultSchema>;
+export type CommunityPost = typeof communityPosts.$inferSelect;
+export type InsertCommunityPost = z.infer<typeof insertCommunityPostSchema>;
+export type PostComment = typeof postComments.$inferSelect;
+export type InsertPostComment = z.infer<typeof insertPostCommentSchema>;

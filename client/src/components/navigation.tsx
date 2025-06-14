@@ -19,6 +19,9 @@ export default function Navigation({ user }: NavigationProps) {
     { path: "/", label: "Dashboard", active: location === "/" },
     { path: "/quiz", label: "Quiz", active: location === "/quiz" },
     { path: "/activities", label: "Activities", active: location === "/activities" },
+    { path: "/teamhub", label: "TeamHub", active: location === "/teamhub" },
+    { path: "/cyberlab", label: "CyberLab", active: location === "/cyberlab" },
+    { path: "/community", label: "Community", active: location === "/community" },
     { path: "/leaderboard", label: "Leaderboard", active: location === "/leaderboard" },
   ];
 

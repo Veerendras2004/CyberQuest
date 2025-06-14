@@ -1,8 +1,12 @@
 import { 
   users, quizzes, questions, activities, userQuizResults, userActivityResults, achievements,
+  teamChallenges, userTeamProgress, cyberLabResults, communityPosts, postComments,
   type User, type InsertUser, type Quiz, type InsertQuiz, type Question, type InsertQuestion,
   type Activity, type InsertActivity, type UserQuizResult, type InsertUserQuizResult,
-  type UserActivityResult, type InsertUserActivityResult, type Achievement, type InsertAchievement
+  type UserActivityResult, type InsertUserActivityResult, type Achievement, type InsertAchievement,
+  type TeamChallenge, type InsertTeamChallenge, type UserTeamProgress, type InsertUserTeamProgress,
+  type CyberLabResult, type InsertCyberLabResult, type CommunityPost, type InsertCommunityPost,
+  type PostComment, type InsertPostComment
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and, gte, lte } from "drizzle-orm";
@@ -52,6 +56,28 @@ export interface IStorage {
     timeSpent: number;
     weeklyScores: number[];
   }>;
+
+  // Team management
+  updateUserTeam(userId: number, team: string): Promise<void>;
+  getUserTeam(userId: number): Promise<string | null>;
+
+  // Team challenges
+  getTeamChallenges(team: string): Promise<TeamChallenge[]>;
+  getTeamChallengeById(id: number): Promise<TeamChallenge | undefined>;
+  createTeamChallenge(challenge: InsertTeamChallenge): Promise<TeamChallenge>;
+  getUserTeamProgress(userId: number, team: string): Promise<UserTeamProgress[]>;
+  saveTeamProgress(progress: InsertUserTeamProgress): Promise<UserTeamProgress>;
+
+  // Cyber lab
+  saveCyberLabResult(result: InsertCyberLabResult): Promise<CyberLabResult>;
+  getUserCyberLabResults(userId: number): Promise<CyberLabResult[]>;
+
+  // Community
+  getCommunityPosts(limit?: number): Promise<CommunityPost[]>;
+  createCommunityPost(post: InsertCommunityPost): Promise<CommunityPost>;
+  getPostComments(postId: number): Promise<PostComment[]>;
+  createPostComment(comment: InsertPostComment): Promise<PostComment>;
+  likePost(postId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -310,6 +336,140 @@ export class DatabaseStorage implements IStorage {
       timeSpent: Math.round(((quizStats?.totalTime || 0) + (activityStats?.totalTime || 0)) / 3600 * 10) / 10, // hours
       weeklyScores
     };
+  }
+
+  // Team management methods
+  async updateUserTeam(userId: number, team: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ teamSelection: team })
+      .where(eq(users.id, userId));
+  }
+
+  async getUserTeam(userId: number): Promise<string | null> {
+    const user = await this.getUser(userId);
+    return user?.teamSelection || null;
+  }
+
+  // Team challenges methods
+  async getTeamChallenges(team: string): Promise<TeamChallenge[]> {
+    return await db
+      .select()
+      .from(teamChallenges)
+      .where(eq(teamChallenges.team, team))
+      .orderBy(teamChallenges.unlockLevel, desc(teamChallenges.createdAt));
+  }
+
+  async getTeamChallengeById(id: number): Promise<TeamChallenge | undefined> {
+    const [challenge] = await db
+      .select()
+      .from(teamChallenges)
+      .where(eq(teamChallenges.id, id));
+    return challenge || undefined;
+  }
+
+  async createTeamChallenge(challenge: InsertTeamChallenge): Promise<TeamChallenge> {
+    const [newChallenge] = await db
+      .insert(teamChallenges)
+      .values(challenge)
+      .returning();
+    return newChallenge;
+  }
+
+  async getUserTeamProgress(userId: number, team: string): Promise<UserTeamProgress[]> {
+    return await db
+      .select()
+      .from(userTeamProgress)
+      .innerJoin(teamChallenges, eq(userTeamProgress.challengeId, teamChallenges.id))
+      .where(and(
+        eq(userTeamProgress.userId, userId),
+        eq(teamChallenges.team, team)
+      ))
+      .orderBy(desc(userTeamProgress.completedAt));
+  }
+
+  async saveTeamProgress(progress: InsertUserTeamProgress): Promise<UserTeamProgress> {
+    const [newProgress] = await db
+      .insert(userTeamProgress)
+      .values(progress)
+      .returning();
+    
+    // Update user total score
+    if (progress.userId && progress.score) {
+      await this.updateUserScore(progress.userId, progress.score);
+    }
+    
+    return newProgress;
+  }
+
+  // Cyber lab methods
+  async saveCyberLabResult(result: InsertCyberLabResult): Promise<CyberLabResult> {
+    const [newResult] = await db
+      .insert(cyberLabResults)
+      .values(result)
+      .returning();
+    
+    // Update user total score
+    if (result.userId && result.score) {
+      await this.updateUserScore(result.userId, result.score);
+    }
+    
+    return newResult;
+  }
+
+  async getUserCyberLabResults(userId: number): Promise<CyberLabResult[]> {
+    return await db
+      .select()
+      .from(cyberLabResults)
+      .where(eq(cyberLabResults.userId, userId))
+      .orderBy(desc(cyberLabResults.completedAt));
+  }
+
+  // Community methods
+  async getCommunityPosts(limit = 50): Promise<CommunityPost[]> {
+    return await db
+      .select()
+      .from(communityPosts)
+      .orderBy(desc(communityPosts.createdAt))
+      .limit(limit);
+  }
+
+  async createCommunityPost(post: InsertCommunityPost): Promise<CommunityPost> {
+    const [newPost] = await db
+      .insert(communityPosts)
+      .values(post)
+      .returning();
+    return newPost;
+  }
+
+  async getPostComments(postId: number): Promise<PostComment[]> {
+    return await db
+      .select()
+      .from(postComments)
+      .where(eq(postComments.postId, postId))
+      .orderBy(postComments.createdAt);
+  }
+
+  async createPostComment(comment: InsertPostComment): Promise<PostComment> {
+    const [newComment] = await db
+      .insert(postComments)
+      .values(comment)
+      .returning();
+    
+    // Update comment count on post
+    await db
+      .update(communityPosts)
+      .set({ commentCount: sql`${communityPosts.commentCount} + 1` })
+      .where(eq(communityPosts.id, comment.postId));
+    
+    return newComment;
+  }
+
+  async likePost(postId: number): Promise<void> {
+    await db
+      .update(communityPosts)
+      .set({ likes: sql`${communityPosts.likes} + 1` })
+      .where(eq(communityPosts.id, postId));
   }
 }
 
